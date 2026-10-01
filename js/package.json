@@ -1,0 +1,7 @@
+{
+  "name": "codeql-fleet-test",
+  "private": true,
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

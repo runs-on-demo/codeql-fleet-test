@@ -1,0 +1,40 @@
+name: CodeQL advanced setup on Fleet
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: runs-on/fleet=sticky-restore/env=dev
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: python
+            build-mode: none
+          - language: javascript-typescript
+            build-mode: none
+          - language: go
+            build-mode: autobuild
+    steps:
+      - name: Runner diagnostics
+        run: |
+          echo "runner=$RUNNER_NAME tool_cache=$RUNNER_TOOL_CACHE temp=$RUNNER_TEMP"
+          ls "$RUNNER_TOOL_CACHE/CodeQL" 2>/dev/null || echo "no CodeQL bundle in tool cache"
+          nproc; free -m; df -h "$GITHUB_WORKSPACE" "$RUNNER_TEMP"
+      - uses: actions/checkout@v5
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{ matrix.language }}"
